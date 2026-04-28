@@ -176,7 +176,7 @@ function Index() {
   return (
     <div className="min-h-screen text-foreground">
       <Header
-        onConfigurar={() => navigate({ to: "/edital" })}
+        onConfigurar={() => navigate({ to: "/edital", search: {} as never })}
         onLogout={handleLogout}
       />
 
