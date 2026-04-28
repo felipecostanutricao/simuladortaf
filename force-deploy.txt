@@ -1,4 +1,6 @@
-Cloudflare Workers deploy - SSR via @cloudflare/vite-plugin
+Cloudflare Workers deploy - tentativa final
+Tipo de projeto no painel: Workers (NÃO Pages)
 Build: npm run build
-Output: dist/ (contém wrangler.json gerado automaticamente)
-Deploy command no Cloudflare: npx wrangler deploy
+Deploy: npx wrangler deploy
+Output: dist/ (wrangler.json gerado pelo @cloudflare/vite-plugin)
+Trigger: 2026-04-28
