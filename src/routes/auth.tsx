@@ -17,6 +17,19 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
+const ADMIN_EMAIL = "felipecostanutricao@gmail.com";
+
+async function routeUser(
+  email: string | undefined | null,
+  navigate: ReturnType<typeof useNavigate>
+) {
+  if (email && email.toLowerCase() === ADMIN_EMAIL) {
+    navigate({ to: "/admin" });
+  } else {
+    navigate({ to: "/" });
+  }
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
