@@ -14,7 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          is_premium: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          is_premium?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_premium?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      taf_goals: {
+        Row: {
+          barra: number
+          corrida: number
+          created_at: string
+          flexao: number
+          id: string
+          natacao: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          barra?: number
+          corrida?: number
+          created_at?: string
+          flexao?: number
+          id?: string
+          natacao?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          barra?: number
+          corrida?: number
+          created_at?: string
+          flexao?: number
+          id?: string
+          natacao?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      taf_records: {
+        Row: {
+          barra: number
+          corrida: number
+          created_at: string
+          flexao: number
+          id: string
+          indice: number
+          natacao: number
+          performed_at: string
+          user_id: string
+        }
+        Insert: {
+          barra: number
+          corrida: number
+          created_at?: string
+          flexao: number
+          id?: string
+          indice: number
+          natacao: number
+          performed_at?: string
+          user_id: string
+        }
+        Update: {
+          barra?: number
+          corrida?: number
+          created_at?: string
+          flexao?: number
+          id?: string
+          indice?: number
+          natacao?: number
+          performed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
