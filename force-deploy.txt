@@ -1,1 +1,1 @@
-Reload Chaves Supabase - 2026-04-28
+Hardcoded Supabase fallback - 2026-04-28T17:00
