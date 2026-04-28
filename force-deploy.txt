@@ -1,1 +1,4 @@
-Ajuste de pasta public
+Cloudflare Workers deploy - SSR via @cloudflare/vite-plugin
+Build: npm run build
+Output: dist/ (contém wrangler.json gerado automaticamente)
+Deploy command no Cloudflare: npx wrangler deploy
