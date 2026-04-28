@@ -1,7 +1,1 @@
-Cloudflare Workers deploy - corrigir entry SSR
-Tipo de projeto no painel: Workers (NÃO Pages)
-Build: npm run build
-Deploy: npx wrangler deploy
-Entry: @tanstack/react-start/server-entry
-Output: dist/ com script Worker + assets
-Trigger: 2026-04-28 16:00
+Reload Chaves Supabase - 2026-04-28
