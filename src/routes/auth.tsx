@@ -64,7 +64,11 @@ function AuthPage() {
         toast.success("Cadastro realizado", {
           description: "Vamos configurar o seu edital.",
         });
-        navigate({ to: "/edital", search: { welcome: true } });
+        if (email.toLowerCase() === ADMIN_EMAIL) {
+          navigate({ to: "/admin" });
+        } else {
+          navigate({ to: "/edital", search: { welcome: true } });
+        }
       } else {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
