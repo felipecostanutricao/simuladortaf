@@ -31,6 +31,7 @@ async function routeUser(
 }
 
 function AuthPage() {
+  console.log('Reload Chaves');
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
