@@ -16,22 +16,25 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
-          display_name: string | null
+          full_name: string | null
           id: string
           is_premium: boolean
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
-          display_name?: string | null
+          full_name?: string | null
           id: string
           is_premium?: boolean
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
-          display_name?: string | null
+          full_name?: string | null
           id?: string
           is_premium?: boolean
           updated_at?: string
@@ -40,32 +43,35 @@ export type Database = {
       }
       taf_goals: {
         Row: {
-          barra: number
-          corrida: number
+          barra_meta: number
+          corrida_meta: number
           created_at: string
-          flexao: number
+          data_taf: string | null
+          flexao_meta: number
           id: string
-          natacao: number
+          natacao_meta: number
           updated_at: string
           user_id: string
         }
         Insert: {
-          barra?: number
-          corrida?: number
+          barra_meta?: number
+          corrida_meta?: number
           created_at?: string
-          flexao?: number
+          data_taf?: string | null
+          flexao_meta?: number
           id?: string
-          natacao?: number
+          natacao_meta?: number
           updated_at?: string
           user_id: string
         }
         Update: {
-          barra?: number
-          corrida?: number
+          barra_meta?: number
+          corrida_meta?: number
           created_at?: string
-          flexao?: number
+          data_taf?: string | null
+          flexao_meta?: number
           id?: string
-          natacao?: number
+          natacao_meta?: number
           updated_at?: string
           user_id?: string
         }
@@ -73,35 +79,32 @@ export type Database = {
       }
       taf_records: {
         Row: {
-          barra: number
-          corrida: number
+          barra_result: number
+          corrida_result: number
           created_at: string
-          flexao: number
+          flexao_result: number
           id: string
-          indice: number
-          natacao: number
+          natacao_result: number
           performed_at: string
           user_id: string
         }
         Insert: {
-          barra: number
-          corrida: number
+          barra_result: number
+          corrida_result: number
           created_at?: string
-          flexao: number
+          flexao_result: number
           id?: string
-          indice: number
-          natacao: number
+          natacao_result: number
           performed_at?: string
           user_id: string
         }
         Update: {
-          barra?: number
-          corrida?: number
+          barra_result?: number
+          corrida_result?: number
           created_at?: string
-          flexao?: number
+          flexao_result?: number
           id?: string
-          indice?: number
-          natacao?: number
+          natacao_result?: number
           performed_at?: string
           user_id?: string
         }
