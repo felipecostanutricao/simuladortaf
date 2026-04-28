@@ -17,6 +17,19 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
+const ADMIN_EMAIL = "felipecostanutricao@gmail.com";
+
+async function routeUser(
+  email: string | undefined | null,
+  navigate: ReturnType<typeof useNavigate>
+) {
+  if (email && email.toLowerCase() === ADMIN_EMAIL) {
+    navigate({ to: "/admin" });
+  } else {
+    navigate({ to: "/" });
+  }
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -26,8 +39,10 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        await routeUser(data.session.user.email, navigate);
+      }
     });
   }, [navigate]);
 
@@ -50,10 +65,10 @@ function AuthPage() {
         });
         navigate({ to: "/edital", search: { welcome: true } });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Acesso autorizado");
-        navigate({ to: "/" });
+        await routeUser(data.user?.email, navigate);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";

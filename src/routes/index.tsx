@@ -47,18 +47,39 @@ function Index() {
   const [evolucao, setEvolucao] = useState<EvolucaoPoint[]>([]);
   const [configOpen, setConfigOpen] = useState(false);
 
-  // Auth guard
+  // Auth guard + admin redirect + active check
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUserId(session?.user?.id ?? null);
-      if (!session) navigate({ to: "/auth" });
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
+    const checkAccess = async (session: { user: { id: string; email?: string } } | null) => {
+      if (!session) {
         navigate({ to: "/auth" });
-      } else {
-        setUserId(data.session.user.id);
+        return;
       }
+      const email = session.user.email?.toLowerCase();
+      if (email === "felipecostanutricao@gmail.com") {
+        navigate({ to: "/admin" });
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (profile && profile.is_active === false) {
+        toast.error("Acesso bloqueado", {
+          description: "Operador desativado. Contate o comando.",
+        });
+        await supabase.auth.signOut();
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserId(session.user.id);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      checkAccess(session as never);
+    });
+    supabase.auth.getSession().then(async ({ data }) => {
+      await checkAccess(data.session as never);
       setAuthChecked(true);
     });
     return () => sub.subscription.unsubscribe();
