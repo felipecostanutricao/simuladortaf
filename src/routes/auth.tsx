@@ -26,8 +26,10 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        await routeUser(data.session.user.email, navigate);
+      }
     });
   }, [navigate]);
 
@@ -50,10 +52,10 @@ function AuthPage() {
         });
         navigate({ to: "/edital", search: { welcome: true } });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Acesso autorizado");
-        navigate({ to: "/" });
+        await routeUser(data.user?.email, navigate);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
