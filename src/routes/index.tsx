@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/taf/Header";
 import { CountdownTatico } from "@/components/taf/CountdownTatico";
@@ -8,14 +8,17 @@ import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
 import {
-  EVOLUCAO_MOCK,
   METAS_PADRAO,
-  SIMULADO_MOCK,
   indiceProntidao,
+  rowToMetas,
+  rowToSimulado,
   type Metas,
   type Simulado,
+  type EvolucaoPoint,
 } from "@/lib/taf-data";
 import { Crosshair, Radar as RadarIcon, LineChart as LineIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -31,33 +34,154 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-// Data alvo do TAF (60 dias a partir de hoje, fictícia)
-const TAF_DATE = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString();
+const FALLBACK_TAF_DATE = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString();
 
 function Index() {
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
   const [metas, setMetas] = useState<Metas>(METAS_PADRAO);
-  const [simulado, setSimulado] = useState<Simulado>(SIMULADO_MOCK);
-  const [evolucao, setEvolucao] = useState(EVOLUCAO_MOCK);
+  const [dataTaf, setDataTaf] = useState<string | null>(null);
+  const [simulado, setSimulado] = useState<Simulado>({ barra: 0, flexao: 0, corrida: 0, natacao: 0 });
+  const [evolucao, setEvolucao] = useState<EvolucaoPoint[]>([]);
   const [configOpen, setConfigOpen] = useState(false);
+
+  // Auth guard
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUserId(session?.user?.id ?? null);
+      if (!session) navigate({ to: "/auth" });
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        navigate({ to: "/auth" });
+      } else {
+        setUserId(data.session.user.id);
+      }
+      setAuthChecked(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
+  // Load data
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const [goalsRes, recordsRes] = await Promise.all([
+        supabase
+          .from("taf_goals")
+          .select("barra_meta, flexao_meta, corrida_meta, natacao_meta, data_taf")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("taf_records")
+          .select("id, barra_result, flexao_result, corrida_result, natacao_result, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true }),
+      ]);
+
+      const loadedMetas = rowToMetas(goalsRes.data);
+      setMetas(loadedMetas);
+      setDataTaf(goalsRes.data?.data_taf ?? null);
+
+      const records = recordsRes.data ?? [];
+      if (records.length > 0) {
+        // Radar usa sempre o último registro
+        setSimulado(rowToSimulado(records[records.length - 1]));
+      }
+      setEvolucao(
+        records.map((r) => ({
+          data: new Date(r.created_at).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+          }),
+          indice: indiceProntidao(rowToSimulado(r), loadedMetas),
+        }))
+      );
+    })();
+  }, [userId]);
 
   const indiceAtual = useMemo(() => indiceProntidao(simulado, metas), [simulado, metas]);
 
-  const handleSalvarSimulado = (s: Simulado) => {
+  const tafDateIso = useMemo(() => {
+    if (!dataTaf) return FALLBACK_TAF_DATE;
+    const d = new Date(dataTaf);
+    d.setHours(8, 0, 0, 0);
+    return d.toISOString();
+  }, [dataTaf]);
+
+  const handleSalvarSimulado = async (s: Simulado) => {
+    if (!userId) return;
+    const { data, error } = await supabase
+      .from("taf_records")
+      .insert({
+        user_id: userId,
+        barra_result: s.barra,
+        flexao_result: s.flexao,
+        corrida_result: s.corrida,
+        natacao_result: s.natacao,
+      })
+      .select("created_at")
+      .single();
+
+    if (error) {
+      toast.error("Falha ao salvar", { description: error.message });
+      return;
+    }
+
     setSimulado(s);
-    const idx = indiceProntidao(s, metas);
-    const hoje = new Date().toLocaleDateString("pt-BR", {
+    const label = new Date(data.created_at).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
     });
-    setEvolucao((prev) => [...prev, { data: hoje, indice: idx }].slice(-12));
+    setEvolucao((prev) => [...prev, { data: label, indice: indiceProntidao(s, metas) }]);
   };
+
+  const handleSalvarMetas = async (m: Metas) => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("taf_goals")
+      .upsert(
+        {
+          user_id: userId,
+          barra_meta: m.barra,
+          flexao_meta: m.flexao,
+          corrida_meta: m.corrida,
+          natacao_meta: m.natacao,
+          data_taf: dataTaf,
+        },
+        { onConflict: "user_id" }
+      );
+    if (error) {
+      toast.error("Falha ao atualizar edital", { description: error.message });
+      return;
+    }
+    setMetas(m);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
+
+  if (!authChecked || !userId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground font-mono-tac uppercase text-xs tracking-widest">
+        Autenticando operador...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-foreground">
-      <Header onConfigurar={() => setConfigOpen(true)} />
+      <Header
+        onConfigurar={() => navigate({ to: "/edital" })}
+        onLogout={handleLogout}
+      />
 
       <main className="container mx-auto px-4 py-6 space-y-6 max-w-6xl">
-        <CountdownTatico targetDate={TAF_DATE} />
+        <CountdownTatico targetDate={tafDateIso} />
 
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard label="Índice Geral" value={`${indiceAtual}`} suffix="pts" highlight />
@@ -117,7 +241,7 @@ function Index() {
         open={configOpen}
         onOpenChange={setConfigOpen}
         metas={metas}
-        onSalvar={setMetas}
+        onSalvar={handleSalvarMetas}
       />
     </div>
   );
@@ -135,11 +259,7 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div
-      className={`panel p-3 ${
-        highlight ? "panel-neon shadow-neon" : ""
-      }`}
-    >
+    <div className={`panel p-3 ${highlight ? "panel-neon shadow-neon" : ""}`}>
       <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
         {label}
       </div>

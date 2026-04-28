@@ -9,6 +9,8 @@ export type Simulado = {
   natacao: number; // segundos (menor é melhor)
 };
 
+export type EvolucaoPoint = { data: string; indice: number };
+
 export const METAS_PADRAO: Metas = {
   barra: 6,
   flexao: 30,
@@ -51,22 +53,42 @@ export function indiceProntidao(s: Simulado, m: Metas): number {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
-// Dados fictícios de evolução
-export const EVOLUCAO_MOCK = [
-  { data: "01/03", indice: 42 },
-  { data: "08/03", indice: 51 },
-  { data: "15/03", indice: 58 },
-  { data: "22/03", indice: 63 },
-  { data: "29/03", indice: 67 },
-  { data: "05/04", indice: 74 },
-  { data: "12/04", indice: 78 },
-  { data: "19/04", indice: 83 },
-  { data: "26/04", indice: 88 },
-];
+// ---------- DB row mappers ----------
 
-export const SIMULADO_MOCK: Simulado = {
-  barra: 8,
-  flexao: 34,
-  corrida: 2650,
-  natacao: 54,
+export type GoalsRow = {
+  barra_meta: number;
+  flexao_meta: number;
+  corrida_meta: number;
+  natacao_meta: number;
+  data_taf: string | null;
 };
+
+export type RecordRow = {
+  id?: string;
+  barra_result: number;
+  flexao_result: number;
+  corrida_result: number;
+  natacao_result: number;
+  created_at?: string;
+  performed_at?: string;
+};
+
+export const rowToMetas = (row: GoalsRow | null | undefined): Metas =>
+  row
+    ? {
+        barra: row.barra_meta,
+        flexao: row.flexao_meta,
+        corrida: row.corrida_meta,
+        natacao: row.natacao_meta,
+      }
+    : { ...METAS_PADRAO };
+
+export const rowToSimulado = (row: RecordRow | null | undefined): Simulado =>
+  row
+    ? {
+        barra: row.barra_result,
+        flexao: row.flexao_result,
+        corrida: row.corrida_result,
+        natacao: row.natacao_result,
+      }
+    : { barra: 0, flexao: 0, corrida: 0, natacao: 0 };
