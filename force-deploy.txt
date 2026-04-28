@@ -1,6 +1,7 @@
-Cloudflare Workers deploy - tentativa final
+Cloudflare Workers deploy - corrigir entry SSR
 Tipo de projeto no painel: Workers (NÃO Pages)
 Build: npm run build
 Deploy: npx wrangler deploy
-Output: dist/ (wrangler.json gerado pelo @cloudflare/vite-plugin)
-Trigger: 2026-04-28
+Entry: @tanstack/react-start/server-entry
+Output: dist/ com script Worker + assets
+Trigger: 2026-04-28 16:00
