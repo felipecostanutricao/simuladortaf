@@ -1,1 +1,1 @@
-Hardcoded Supabase fallback - 2026-04-28T17:00
+Force deploy - 2026-04-28T21:00:17Z
