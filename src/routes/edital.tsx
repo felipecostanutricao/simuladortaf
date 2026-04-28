@@ -33,6 +33,10 @@ function EditalPage() {
         navigate({ to: "/auth" });
         return;
       }
+      if (session.user.email?.toLowerCase() === "felipecostanutricao@gmail.com") {
+        navigate({ to: "/admin" });
+        return;
+      }
       const { data } = await supabase
         .from("taf_goals")
         .select("barra_meta, flexao_meta, corrida_meta, natacao_meta, data_taf")
