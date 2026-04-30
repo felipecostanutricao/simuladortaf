@@ -374,6 +374,7 @@ function Index() {
           </div>
         </section>
 
+        <footer className="pt-6 pb-4 text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
           // Central T.A.F — Sistema de Comando Operacional //
         </footer>
       </main>
