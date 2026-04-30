@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Crosshair, Shield, CheckCircle2, Send, Lock, MessageCircle } from "lucide-react";
+import { Crosshair, Shield, CheckCircle2, Lock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Typewriter } from "@/components/taf/Typewriter";
+import { playHover, playSuccess, playError, unlockAudio } from "@/lib/audio/audioService";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
