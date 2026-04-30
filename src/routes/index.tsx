@@ -203,6 +203,39 @@ function Index() {
     navigate({ to: "/auth" });
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("Senha curta", { description: "Use no mínimo 8 caracteres." });
+      return;
+    }
+    setPwLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPwLoading(false);
+    if (error) {
+      toast.error("Falha ao atualizar senha", { description: error.message });
+      return;
+    }
+    toast.success("Senha atualizada", { description: "Use a nova senha no próximo acesso." });
+    setNewPassword("");
+  };
+
+  const expiryInfo = useMemo(() => {
+    if (!expiryDate) return null;
+    const exp = new Date(expiryDate);
+    const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+    return {
+      formatted: exp.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      days,
+      critical: days <= 5,
+    };
+  }, [expiryDate]);
+
+  const hiringFormatted = useMemo(() => {
+    if (!hiringDate) return null;
+    return new Date(hiringDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  }, [hiringDate]);
+
   if (!authChecked || !userId) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground font-mono-tac uppercase text-xs tracking-widest">
