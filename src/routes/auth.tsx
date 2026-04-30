@@ -19,7 +19,7 @@ export const Route = createFileRoute("/auth")({
 
 const ADMIN_EMAIL = "felipecostanutricao@gmail.com";
 const WHATSAPP_URL = "https://wa.me/5561991317884?text=Comandante,%20solicito%20permiss%C3%A3o%20para%20infiltra%C3%A7%C3%A3o.%20Segue%20o%20comprovante%20da%20Central%20T.A.F.";
-const PAYMENT_URL = "#";
+const PAYMENT_URL = "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=506ee1b8bf3d43c3b2123e38f4e9fec7";
 
 async function routeUser(
   email: string | undefined | null,
