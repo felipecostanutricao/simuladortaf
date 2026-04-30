@@ -68,7 +68,7 @@ function Index() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_active")
+        .select("is_active, expiry_date, hiring_date")
         .eq("id", session.user.id)
         .maybeSingle();
       if (profile && profile.is_active === false) {
@@ -79,6 +79,16 @@ function Index() {
         navigate({ to: "/auth" });
         return;
       }
+      if (profile?.expiry_date && new Date(profile.expiry_date).getTime() < Date.now()) {
+        toast.error("Vigência expirada", {
+          description: "Renove sua assinatura com o Comando.",
+        });
+        await supabase.auth.signOut();
+        navigate({ to: "/auth" });
+        return;
+      }
+      setExpiryDate(profile?.expiry_date ?? null);
+      setHiringDate(profile?.hiring_date ?? null);
       setUserId(session.user.id);
     };
 
