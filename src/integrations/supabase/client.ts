@@ -5,8 +5,8 @@ import type { Database } from './types';
 // Hardcoded fallback values (anon/publishable keys are PUBLIC and safe in client code).
 // This guarantees the client works even when the build environment (e.g. Cloudflare Workers)
 // fails to inject the VITE_* env vars at build time.
-const FALLBACK_SUPABASE_URL = 'https://klmyvdpnvbzctihkihyi.supabase.co';
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsbXl2ZHBudmJ6Y3RpaGtpaHlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNTEwNjEsImV4cCI6MjA5MjkyNzA2MX0.BVGrFmSBIRqJntoNbOaDGHJzgA3K2Ql0mC7sie_QIj8';
+const FALLBACK_SUPABASE_URL = 'https://kmmggpkrzbfneramsivp.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttbWdncGtyemJmbmVyYW1zaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMzY2MTgsImV4cCI6MjA5MjkxMjYxOH0.CfSo8wtyOmfanK11KhlxCQbaj9i2r0hxVBeXp1pgS-s';
 
 function createSupabaseClient() {
   const SUPABASE_URL =
