@@ -22,7 +22,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Shield, LogOut, Users, KeyRound, Copy, AlertTriangle } from "lucide-react";
-import { adminSetPassword } from "@/server/admin.functions";
+import { adminSetPassword } from "@/lib/admin/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
