@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
+import { Scanlines } from "@/components/taf/Scanlines";
 
 import appCss from "../styles.css?url";
 
@@ -73,6 +74,7 @@ function RootComponent() {
   return (
     <>
       <Outlet />
+      <Scanlines />
       <Toaster theme="dark" position="top-right" />
     </>
   );

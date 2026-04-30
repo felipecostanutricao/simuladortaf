@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Crosshair, Shield, CheckCircle2, Send, Lock, MessageCircle } from "lucide-react";
+import { Crosshair, Shield, CheckCircle2, Lock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Typewriter } from "@/components/taf/Typewriter";
+import { playHover, playSuccess, playError, unlockAudio } from "@/lib/audio/audioService";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -50,6 +53,7 @@ function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    unlockAudio();
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -62,8 +66,8 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        // Logout imediato — recruta precisa de validação manual antes de operar
         await supabase.auth.signOut();
+        playSuccess();
         toast.success("RECRUTAMENTO REGISTRADO", {
           description: "Realize o pagamento e envie o comprovante via WhatsApp para liberação do acesso.",
         });
@@ -72,7 +76,6 @@ function AuthPage() {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Verificar is_active no profile
         const userId = data.user?.id;
         if (userId) {
           const { data: profile } = await supabase
@@ -83,6 +86,7 @@ function AuthPage() {
 
           if (!profile?.is_active) {
             await supabase.auth.signOut();
+            playError();
             toast.error("ACESSO NEGADO", {
               description: "Aguardando validação do comprovante pelo Comando.",
             });
@@ -91,32 +95,52 @@ function AuthPage() {
           }
         }
 
+        playSuccess();
         toast.success("Acesso autorizado");
         await routeUser(data.user?.email, navigate);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      playError();
       toast.error("Falha na operação", { description: msg });
     } finally {
       setLoading(false);
     }
   };
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: 24 },
+    show: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.1 + i * 0.12, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+    }),
+  };
+
+  const neonBtn =
+    "w-full h-12 font-mono-tac uppercase tracking-[0.2em] text-sm bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon animate-pulse-neon transition-all duration-200 hover:shadow-[0_0_40px_8px_color-mix(in_oklab,var(--neon)_55%,transparent)]";
+
   return (
     <div className="min-h-screen px-4 py-10">
       <div className="max-w-2xl mx-auto space-y-10">
         {/* === FORM === */}
-        <div className="panel panel-neon shadow-neon p-8">
+        <motion.div
+          custom={0}
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
+          className="panel panel-neon shadow-neon p-8"
+        >
           <div className="flex items-center gap-3 mb-6">
             <div className="h-12 w-12 rounded-md panel panel-neon flex items-center justify-center">
               <Crosshair className="h-6 w-6 text-neon" strokeWidth={2.5} />
             </div>
             <div>
               <p className="text-[10px] font-mono-tac text-muted-foreground uppercase tracking-widest">
-                Portal do Operador
+                <Typewriter text="Portal do Operador" speedMs={45} />
               </p>
               <h1 className="text-lg font-bold font-mono-tac uppercase tracking-widest text-glow text-neon">
-                Central T.A.F
+                <Typewriter text="Central T.A.F" speedMs={70} startDelayMs={400} />
               </h1>
             </div>
           </div>
@@ -124,8 +148,9 @@ function AuthPage() {
           <div className="flex gap-2 mb-6 p-1 bg-background/60 border border-border rounded-md">
             <button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => setMode("login")}
-              className={`flex-1 py-2 text-xs font-mono-tac uppercase tracking-widest rounded ${
+              className={`flex-1 py-2 text-xs font-mono-tac uppercase tracking-widest rounded transition-all ${
                 mode === "login" ? "bg-neon text-primary-foreground shadow-neon" : "text-muted-foreground"
               }`}
             >
@@ -133,8 +158,9 @@ function AuthPage() {
             </button>
             <button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => setMode("signup")}
-              className={`flex-1 py-2 text-xs font-mono-tac uppercase tracking-widest rounded ${
+              className={`flex-1 py-2 text-xs font-mono-tac uppercase tracking-widest rounded transition-all ${
                 mode === "signup" ? "bg-neon text-primary-foreground shadow-neon" : "text-muted-foreground"
               }`}
             >
@@ -151,6 +177,7 @@ function AuthPage() {
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  onMouseEnter={playHover}
                   required
                   className="mt-1 h-11 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
                 />
@@ -167,6 +194,7 @@ function AuthPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onMouseEnter={playHover}
                 required
                 autoComplete="email"
                 className="mt-1 h-11 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
@@ -188,6 +216,7 @@ function AuthPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onMouseEnter={playHover}
                 required
                 minLength={6}
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
@@ -198,7 +227,8 @@ function AuthPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 font-mono-tac uppercase tracking-[0.2em] text-sm bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon"
+              onMouseEnter={playHover}
+              className={neonBtn}
             >
               <Shield className="h-4 w-4" />
               {loading ? "Processando..." : mode === "login" ? "Entrar em Operação" : "Iniciar Recrutamento"}
@@ -208,10 +238,16 @@ function AuthPage() {
           <p className="mt-6 text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
             <Link to="/">// Voltar //</Link>
           </p>
-        </div>
+        </motion.div>
 
         {/* === PLANO ÚNICO === */}
-        <div className="panel panel-neon shadow-neon p-8 text-center relative overflow-hidden">
+        <motion.div
+          custom={1}
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
+          className="panel panel-neon shadow-neon p-8 text-center relative overflow-hidden"
+        >
           <div className="absolute top-0 left-0 right-0 bg-neon text-primary-foreground py-1.5 text-[10px] font-mono-tac uppercase tracking-[0.3em] font-bold">
             // Acesso Tático //
           </div>
@@ -240,18 +276,29 @@ function AuthPage() {
                 <span className="font-mono-tac text-xs uppercase tracking-wider">Countdown Tático</span>
               </li>
             </ul>
-            <a href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
-              <Button className="w-full h-12 font-mono-tac uppercase tracking-[0.2em] text-sm bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon">
+            <a
+              href={PAYMENT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { unlockAudio(); playSuccess(); }}
+            >
+              <Button onMouseEnter={playHover} className={neonBtn}>
                 <Lock className="h-4 w-4" />
                 Assinar Agora
               </Button>
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* === PROTOCOLO === */}
         <div className="space-y-4">
-          <div className="text-center mb-6">
+          <motion.div
+            custom={2}
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="text-center mb-6"
+          >
             <p className="text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
               // Briefing Operacional //
             </p>
@@ -261,10 +308,16 @@ function AuthPage() {
             <p className="text-xs font-mono-tac uppercase tracking-wider text-muted-foreground mt-1">
               Próximos Passos
             </p>
-          </div>
+          </motion.div>
 
           {/* 01 */}
-          <div className="panel panel-neon p-6 flex gap-4 items-start">
+          <motion.div
+            custom={3}
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="panel panel-neon p-6 flex gap-4 items-start"
+          >
             <div className="text-3xl font-bold font-mono-tac text-neon text-glow flex-shrink-0 w-12">
               01
             </div>
@@ -276,10 +329,16 @@ function AuthPage() {
                 Conclua o pagamento do acesso mensal através do botão "ASSINAR AGORA".
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* 02 */}
-          <div className="panel panel-neon p-6 flex gap-4 items-start">
+          <motion.div
+            custom={4}
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="panel panel-neon p-6 flex gap-4 items-start"
+          >
             <div className="text-3xl font-bold font-mono-tac text-neon text-glow flex-shrink-0 w-12">
               02
             </div>
@@ -290,17 +349,28 @@ function AuthPage() {
               <p className="text-xs text-muted-foreground font-mono-tac mb-4">
                 Envie o recibo para a Central via WhatsApp para validação imediata pelo Comando.
               </p>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <Button className="w-full h-11 font-mono-tac uppercase tracking-[0.2em] text-xs bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon">
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => { unlockAudio(); playSuccess(); }}
+              >
+                <Button onMouseEnter={playHover} className={`${neonBtn} h-11 text-xs`}>
                   <MessageCircle className="h-4 w-4" />
                   Enviar Comprovante
                 </Button>
               </a>
             </div>
-          </div>
+          </motion.div>
 
           {/* 03 */}
-          <div className="panel panel-neon p-6 flex gap-4 items-start">
+          <motion.div
+            custom={5}
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="panel panel-neon p-6 flex gap-4 items-start"
+          >
             <div className="text-3xl font-bold font-mono-tac text-neon text-glow flex-shrink-0 w-12">
               03
             </div>
@@ -312,7 +382,7 @@ function AuthPage() {
                 Assim que receber a confirmação via WhatsApp, retorne a este portal e utilize o e-mail e a senha que você acabou de cadastrar para entrar em operação.
               </p>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <p className="text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground pt-4">
