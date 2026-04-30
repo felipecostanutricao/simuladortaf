@@ -173,9 +173,10 @@ function AdminPage() {
   const updateDate = async (op: Operator, field: "hiring_date" | "expiry_date", value: string) => {
     const iso = fromDateInput(value);
     setOperators((prev) => prev.map((o) => (o.id === op.id ? { ...o, [field]: iso } : o)));
+    const patch = field === "hiring_date" ? { hiring_date: iso } : { expiry_date: iso };
     const { error } = await supabase
       .from("profiles")
-      .update({ [field]: iso })
+      .update(patch)
       .eq("id", op.id);
     if (error) {
       toast.error("Falha ao atualizar data", { description: error.message });
