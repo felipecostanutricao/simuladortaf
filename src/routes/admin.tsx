@@ -211,9 +211,8 @@ function AdminPage() {
     setPwSaving(false);
   };
 
-  const copyKit = async (op: Operator, password?: string) => {
-    const pwd = password ?? "[defina via Gestão de Senhas]";
-    const text = `Operador, a sua credencial para a Central T.A.F. foi validada. E-mail: ${op.email ?? ""} | Senha Temporária: ${pwd} | Vigência: 30 dias. Aceda em: ${APP_URL} e altere a sua senha no primeiro acesso.`;
+  const copyKit = async (_op: Operator, _password?: string) => {
+    const text = `Operador, a sua credencial para a Central T.A.F. foi validada e o seu acesso está LIBERADO. Vigência: 30 dias. Diretriz: Utilize o e-mail e a senha que você mesmo cadastrou no momento do alistamento. Aceda em: ${APP_URL}`;
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Kit de Acesso copiado");
