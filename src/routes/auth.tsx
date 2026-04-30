@@ -53,6 +53,7 @@ function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    unlockAudio();
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -65,8 +66,8 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        // Logout imediato — recruta precisa de validação manual antes de operar
         await supabase.auth.signOut();
+        playSuccess();
         toast.success("RECRUTAMENTO REGISTRADO", {
           description: "Realize o pagamento e envie o comprovante via WhatsApp para liberação do acesso.",
         });
@@ -75,7 +76,6 @@ function AuthPage() {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Verificar is_active no profile
         const userId = data.user?.id;
         if (userId) {
           const { data: profile } = await supabase
@@ -86,6 +86,7 @@ function AuthPage() {
 
           if (!profile?.is_active) {
             await supabase.auth.signOut();
+            playError();
             toast.error("ACESSO NEGADO", {
               description: "Aguardando validação do comprovante pelo Comando.",
             });
@@ -94,16 +95,30 @@ function AuthPage() {
           }
         }
 
+        playSuccess();
         toast.success("Acesso autorizado");
         await routeUser(data.user?.email, navigate);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      playError();
       toast.error("Falha na operação", { description: msg });
     } finally {
       setLoading(false);
     }
   };
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: 24 },
+    show: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.1 + i * 0.12, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+    }),
+  };
+
+  const neonBtn =
+    "w-full h-12 font-mono-tac uppercase tracking-[0.2em] text-sm bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon animate-pulse-neon transition-all duration-200 hover:shadow-[0_0_40px_8px_color-mix(in_oklab,var(--neon)_55%,transparent)]";
 
   return (
     <div className="min-h-screen px-4 py-10">
