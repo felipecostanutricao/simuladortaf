@@ -306,10 +306,10 @@ function AuthPage() {
             </div>
             <div className="flex-1">
               <h3 className="font-mono-tac uppercase tracking-widest text-sm font-bold text-foreground mb-1">
-                Infiltração
+                Infiltração e Acesso
               </h3>
               <p className="text-xs text-muted-foreground font-mono-tac">
-                Aguarde a liberação da credencial pelo Comando para acessar o simulador tático.
+                Assim que receber a confirmação via WhatsApp, retorne a este portal e utilize o e-mail e a senha que você acabou de cadastrar para entrar em operação.
               </p>
             </div>
           </div>
