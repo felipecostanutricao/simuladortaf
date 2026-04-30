@@ -303,7 +303,77 @@ function Index() {
           </TabsContent>
         </Tabs>
 
-        <footer className="pt-6 pb-4 text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
+        {/* === STATUS DA MISSÃO === */}
+        <section className="grid md:grid-cols-2 gap-4">
+          <div className={`panel p-5 ${expiryInfo?.critical ? "panel-neon shadow-neon" : ""}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarClock className={`h-4 w-4 ${expiryInfo?.critical ? "text-destructive" : "text-neon"}`} />
+              <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
+                Status da Missão
+              </h3>
+            </div>
+            {expiryInfo ? (
+              <>
+                <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                  Vencimento da Vigência
+                </div>
+                <div className={`mt-1 text-2xl font-mono-tac font-bold tabular-nums ${expiryInfo.critical ? "text-destructive" : "text-neon text-glow"}`}>
+                  {expiryInfo.formatted}
+                </div>
+                <p className="mt-2 text-[11px] font-mono-tac uppercase tracking-wider text-muted-foreground">
+                  {expiryInfo.days > 0 ? `${expiryInfo.days} dia(s) restantes` : "Vigência expirada — contate o Comando"}
+                </p>
+                {hiringFormatted && (
+                  <p className="mt-3 text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                    Início: <span className="text-foreground">{hiringFormatted}</span>
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-xs font-mono-tac text-muted-foreground">
+                Vigência não definida. Contate o Comando.
+              </p>
+            )}
+          </div>
+
+          {/* === SEGURANÇA === */}
+          <div className="panel p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound className="h-4 w-4 text-neon" />
+              <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
+                Segurança
+              </h3>
+            </div>
+            <p className="text-[11px] font-mono-tac text-muted-foreground mb-3 uppercase tracking-wider">
+              Altere sua senha de operador
+            </p>
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <div>
+                <Label className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                  Nova Senha
+                </Label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                  className="mt-1 h-10 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={pwLoading}
+                className="w-full h-10 font-mono-tac uppercase tracking-widest text-xs bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon"
+              >
+                <ShieldAlert className="h-4 w-4" />
+                {pwLoading ? "Atualizando..." : "Atualizar Senha"}
+              </Button>
+            </form>
+          </div>
+        </section>
+
           // Central T.A.F — Sistema de Comando Operacional //
         </footer>
       </main>
