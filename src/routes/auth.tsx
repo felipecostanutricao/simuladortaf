@@ -154,6 +154,9 @@ function AuthPage() {
                   required
                   className="mt-1 h-11 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
                 />
+                <p className="mt-1.5 text-[10px] font-mono-tac uppercase tracking-wider text-muted-foreground">
+                  Pode ser o seu nome real ou nome de guerra.
+                </p>
               </div>
             )}
             <div>
@@ -168,6 +171,14 @@ function AuthPage() {
                 autoComplete="email"
                 className="mt-1 h-11 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
               />
+              {mode === "signup" && (
+                <p className="mt-1.5 text-[10px] font-mono-tac tracking-wider text-neon/90 leading-relaxed">
+                  <span className="uppercase font-bold">// Dica de segurança //</span>{" "}
+                  <span className="text-muted-foreground normal-case">
+                    Crie um e-mail apenas para uso no app. Isso aumenta sua segurança e protege seus dados reais de qualquer vazamento.
+                  </span>
+                </p>
+              )}
             </div>
             <div>
               <Label className="text-[11px] font-mono-tac uppercase tracking-widest text-muted-foreground">

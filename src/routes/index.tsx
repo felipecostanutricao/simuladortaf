@@ -7,6 +7,9 @@ import { SimularForm } from "@/components/taf/SimularForm";
 import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   METAS_PADRAO,
   indiceProntidao,
@@ -16,7 +19,7 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon } from "lucide-react";
+import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -46,6 +49,10 @@ function Index() {
   const [simulado, setSimulado] = useState<Simulado>({ barra: 0, flexao: 0, corrida: 0, natacao: 0 });
   const [evolucao, setEvolucao] = useState<EvolucaoPoint[]>([]);
   const [configOpen, setConfigOpen] = useState(false);
+  const [expiryDate, setExpiryDate] = useState<string | null>(null);
+  const [hiringDate, setHiringDate] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
@@ -61,7 +68,7 @@ function Index() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_active")
+        .select("is_active, expiry_date, hiring_date")
         .eq("id", session.user.id)
         .maybeSingle();
       if (profile && profile.is_active === false) {
@@ -72,6 +79,16 @@ function Index() {
         navigate({ to: "/auth" });
         return;
       }
+      if (profile?.expiry_date && new Date(profile.expiry_date).getTime() < Date.now()) {
+        toast.error("Vigência expirada", {
+          description: "Renove sua assinatura com o Comando.",
+        });
+        await supabase.auth.signOut();
+        navigate({ to: "/auth" });
+        return;
+      }
+      setExpiryDate(profile?.expiry_date ?? null);
+      setHiringDate(profile?.hiring_date ?? null);
       setUserId(session.user.id);
     };
 
@@ -186,6 +203,39 @@ function Index() {
     navigate({ to: "/auth" });
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("Senha curta", { description: "Use no mínimo 8 caracteres." });
+      return;
+    }
+    setPwLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPwLoading(false);
+    if (error) {
+      toast.error("Falha ao atualizar senha", { description: error.message });
+      return;
+    }
+    toast.success("Senha atualizada", { description: "Use a nova senha no próximo acesso." });
+    setNewPassword("");
+  };
+
+  const expiryInfo = useMemo(() => {
+    if (!expiryDate) return null;
+    const exp = new Date(expiryDate);
+    const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+    return {
+      formatted: exp.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      days,
+      critical: days <= 5,
+    };
+  }, [expiryDate]);
+
+  const hiringFormatted = useMemo(() => {
+    if (!hiringDate) return null;
+    return new Date(hiringDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  }, [hiringDate]);
+
   if (!authChecked || !userId) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground font-mono-tac uppercase text-xs tracking-widest">
@@ -252,6 +302,77 @@ function Index() {
             <EvolucaoChart data={evolucao} />
           </TabsContent>
         </Tabs>
+
+        {/* === STATUS DA MISSÃO === */}
+        <section className="grid md:grid-cols-2 gap-4">
+          <div className={`panel p-5 ${expiryInfo?.critical ? "panel-neon shadow-neon" : ""}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarClock className={`h-4 w-4 ${expiryInfo?.critical ? "text-destructive" : "text-neon"}`} />
+              <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
+                Status da Missão
+              </h3>
+            </div>
+            {expiryInfo ? (
+              <>
+                <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                  Vencimento da Vigência
+                </div>
+                <div className={`mt-1 text-2xl font-mono-tac font-bold tabular-nums ${expiryInfo.critical ? "text-destructive" : "text-neon text-glow"}`}>
+                  {expiryInfo.formatted}
+                </div>
+                <p className="mt-2 text-[11px] font-mono-tac uppercase tracking-wider text-muted-foreground">
+                  {expiryInfo.days > 0 ? `${expiryInfo.days} dia(s) restantes` : "Vigência expirada — contate o Comando"}
+                </p>
+                {hiringFormatted && (
+                  <p className="mt-3 text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                    Início: <span className="text-foreground">{hiringFormatted}</span>
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-xs font-mono-tac text-muted-foreground">
+                Vigência não definida. Contate o Comando.
+              </p>
+            )}
+          </div>
+
+          {/* === SEGURANÇA === */}
+          <div className="panel p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound className="h-4 w-4 text-neon" />
+              <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
+                Segurança
+              </h3>
+            </div>
+            <p className="text-[11px] font-mono-tac text-muted-foreground mb-3 uppercase tracking-wider">
+              Altere sua senha de operador
+            </p>
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <div>
+                <Label className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                  Nova Senha
+                </Label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                  className="mt-1 h-10 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={pwLoading}
+                className="w-full h-10 font-mono-tac uppercase tracking-widest text-xs bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon"
+              >
+                <ShieldAlert className="h-4 w-4" />
+                {pwLoading ? "Atualizando..." : "Atualizar Senha"}
+              </Button>
+            </form>
+          </div>
+        </section>
 
         <footer className="pt-6 pb-4 text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
           // Central T.A.F — Sistema de Comando Operacional //
