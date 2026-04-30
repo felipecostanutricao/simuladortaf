@@ -49,6 +49,10 @@ function Index() {
   const [simulado, setSimulado] = useState<Simulado>({ barra: 0, flexao: 0, corrida: 0, natacao: 0 });
   const [evolucao, setEvolucao] = useState<EvolucaoPoint[]>([]);
   const [configOpen, setConfigOpen] = useState(false);
+  const [expiryDate, setExpiryDate] = useState<string | null>(null);
+  const [hiringDate, setHiringDate] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
