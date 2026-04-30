@@ -240,7 +240,7 @@ function AuthPage() {
                 <span className="font-mono-tac text-xs uppercase tracking-wider">Countdown Tático</span>
               </li>
             </ul>
-            <a href={PAYMENT_URL}>
+            <a href={PAYMENT_URL} target="_blank" rel="noopener noreferrer">
               <Button className="w-full h-12 font-mono-tac uppercase tracking-[0.2em] text-sm bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon">
                 <Lock className="h-4 w-4" />
                 Assinar Agora
