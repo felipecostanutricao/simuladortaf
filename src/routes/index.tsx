@@ -7,6 +7,9 @@ import { SimularForm } from "@/components/taf/SimularForm";
 import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   METAS_PADRAO,
   indiceProntidao,
@@ -16,7 +19,7 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon } from "lucide-react";
+import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
