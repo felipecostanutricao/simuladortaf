@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      physical_evolution: {
+        Row: {
+          bmi: number
+          created_at: string
+          height: number
+          id: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          bmi: number
+          created_at?: string
+          height: number
+          id?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          bmi?: number
+          created_at?: string
+          height?: number
+          id?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

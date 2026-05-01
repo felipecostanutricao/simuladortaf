@@ -1,3 +1,4 @@
+import React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,8 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Shield, LogOut, Users, KeyRound, Copy, AlertTriangle } from "lucide-react";
+import { Shield, LogOut, Users, KeyRound, Copy, AlertTriangle, Activity } from "lucide-react";
 import { adminSetPassword } from "@/lib/admin/admin.functions";
+import { OperatorBioDetail } from "@/components/taf/OperatorBioDetail";
+import { playHover } from "@/lib/audio/audioService";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -80,6 +83,7 @@ function AdminPage() {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [pwDialog, setPwDialog] = useState<{ op: Operator; password: string } | null>(null);
   const [pwSaving, setPwSaving] = useState(false);
+  const [detailOpId, setDetailOpId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -296,8 +300,9 @@ function AdminPage() {
               ) : (
                 operators.map((op) => {
                   const expired = isExpired(op.expiry_date);
-                  return (
-                    <TableRow key={op.id} className="border-border">
+                    return (
+                    <React.Fragment key={op.id}>
+                    <TableRow className="border-border">
                       <TableCell className="font-medium">{op.full_name ?? "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{op.email ?? "—"}</TableCell>
                       <TableCell>
@@ -344,6 +349,16 @@ function AdminPage() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => setDetailOpId(detailOpId === op.id ? null : op.id)}
+                            onMouseEnter={playHover}
+                            className="h-8 font-mono-tac uppercase text-[10px] tracking-widest"
+                          >
+                            <Activity className="h-3 w-3" />
+                            Bio
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => openPwDialog(op)}
                             className="h-8 font-mono-tac uppercase text-[10px] tracking-widest"
                           >
@@ -362,7 +377,19 @@ function AdminPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
+                    {detailOpId === op.id && (
+                      <TableRow className="border-border">
+                        <TableCell colSpan={7} className="p-4">
+                          <OperatorBioDetail
+                            userId={op.id}
+                            name={op.full_name ?? op.email ?? "Operador"}
+                            onClose={() => setDetailOpId(null)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </React.Fragment>
+                   );
                 })
               )}
             </TableBody>

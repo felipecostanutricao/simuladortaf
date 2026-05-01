@@ -6,6 +6,7 @@ import { CountdownTatico } from "@/components/taf/CountdownTatico";
 import { SimularForm } from "@/components/taf/SimularForm";
 import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
+import { BioestatisticaSection } from "@/components/taf/BioestatisticaSection";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert } from "lucide-react";
+import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -266,7 +267,7 @@ function Index() {
         </section>
 
         <Tabs defaultValue="simular" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-card border border-border h-12 p-1">
+          <TabsList className="grid w-full grid-cols-4 bg-card border border-border h-12 p-1">
             <TabsTrigger
               value="simular"
               className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
@@ -288,6 +289,13 @@ function Index() {
               <LineIcon className="h-4 w-4 mr-1.5" />
               Evolução
             </TabsTrigger>
+            <TabsTrigger
+              value="bio"
+              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+            >
+              <ScaleIcon className="h-4 w-4 mr-1.5" />
+              Bio
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="simular" className="mt-5">
@@ -300,6 +308,10 @@ function Index() {
 
           <TabsContent value="evolucao" className="mt-5">
             <EvolucaoChart data={evolucao} />
+          </TabsContent>
+
+          <TabsContent value="bio" className="mt-5">
+            <BioestatisticaSection userId={userId} />
           </TabsContent>
         </Tabs>
 
