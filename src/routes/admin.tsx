@@ -347,6 +347,16 @@ function AdminPage() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => setDetailOpId(detailOpId === op.id ? null : op.id)}
+                            onMouseEnter={playHover}
+                            className="h-8 font-mono-tac uppercase text-[10px] tracking-widest"
+                          >
+                            <Activity className="h-3 w-3" />
+                            Bio
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => openPwDialog(op)}
                             className="h-8 font-mono-tac uppercase text-[10px] tracking-widest"
                           >
@@ -365,6 +375,17 @@ function AdminPage() {
                         </div>
                       </TableCell>
                     </TableRow>
+                    {detailOpId === op.id && (
+                      <TableRow key={`${op.id}-detail`} className="border-border">
+                        <TableCell colSpan={7} className="p-4">
+                          <OperatorBioDetail
+                            userId={op.id}
+                            name={op.full_name ?? op.email ?? "Operador"}
+                            onClose={() => setDetailOpId(null)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
                   );
                 })
               )}
