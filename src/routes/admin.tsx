@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Shield, LogOut, Users, KeyRound, Copy, AlertTriangle } from "lucide-react";
+import { Shield, LogOut, Users, KeyRound, Copy, AlertTriangle, Activity } from "lucide-react";
 import { adminSetPassword } from "@/lib/admin/admin.functions";
+import { OperatorBioDetail } from "@/components/taf/OperatorBioDetail";
+import { playHover } from "@/lib/audio/audioService";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -80,6 +82,7 @@ function AdminPage() {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [pwDialog, setPwDialog] = useState<{ op: Operator; password: string } | null>(null);
   const [pwSaving, setPwSaving] = useState(false);
+  const [detailOpId, setDetailOpId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
