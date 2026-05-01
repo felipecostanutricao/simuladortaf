@@ -1,0 +1,1 @@
+ALTER TABLE public.taf_goals ADD CONSTRAINT taf_goals_user_id_unique UNIQUE (user_id);
