@@ -299,8 +299,9 @@ function AdminPage() {
               ) : (
                 operators.map((op) => {
                   const expired = isExpired(op.expiry_date);
-                  return (
-                    <TableRow key={op.id} className="border-border">
+                    return (
+                    <React.Fragment key={op.id}>
+                    <TableRow className="border-border">
                       <TableCell className="font-medium">{op.full_name ?? "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{op.email ?? "—"}</TableCell>
                       <TableCell>
@@ -376,7 +377,7 @@ function AdminPage() {
                       </TableCell>
                     </TableRow>
                     {detailOpId === op.id && (
-                      <TableRow key={`${op.id}-detail`} className="border-border">
+                      <TableRow className="border-border">
                         <TableCell colSpan={7} className="p-4">
                           <OperatorBioDetail
                             userId={op.id}
@@ -386,7 +387,8 @@ function AdminPage() {
                         </TableCell>
                       </TableRow>
                     )}
-                  );
+                    </React.Fragment>
+                   );
                 })
               )}
             </TableBody>
