@@ -281,7 +281,13 @@ function Index() {
         <CountdownTatico targetDate={tafDateIso} />
 
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Índice Geral" value={`${indiceAtual}`} suffix="pts" highlight />
+          <StatCard
+            label="Índice Geral"
+            value={`${indiceAtual}`}
+            suffix="pts"
+            highlight
+            tooltip="O Índice Geral avalia o cumprimento da missão. Cada modalidade atingida equivale a 100% de aproveitamento. O índice final é a média das provas. Exceder a meta cria reserva tática (física), mas não eleva o índice acima de 100 pts, focando na aprovação segura e prevenção de lesões."
+          />
           <StatCard label="Barra Fixa" value={`${simulado.barra}`} suffix={`/${metas.barra}`} />
           <StatCard label="Flexão" value={`${simulado.flexao}`} suffix={`/${metas.flexao}`} />
           <StatCard
