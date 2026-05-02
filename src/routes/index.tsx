@@ -60,6 +60,8 @@ function Index() {
   const [hiringDate, setHiringDate] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+  const [nomeDeGuerra, setNomeDeGuerra] = useState("");
+  const [nomeLoading, setNomeLoading] = useState(false);
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
