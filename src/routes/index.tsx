@@ -98,6 +98,7 @@ function Index() {
       }
       setExpiryDate(profile?.expiry_date ?? null);
       setHiringDate(profile?.hiring_date ?? null);
+      setNomeDeGuerra((profile as any)?.nome_de_guerra ?? "");
       setUserId(session.user.id);
     };
 
