@@ -479,16 +479,30 @@ function StatCard({
   value,
   suffix,
   highlight,
+  tooltip,
 }: {
   label: string;
   value: string;
   suffix?: string;
   highlight?: boolean;
+  tooltip?: string;
 }) {
   return (
     <div className={`panel p-3 ${highlight ? "panel-neon shadow-neon" : ""}`}>
-      <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+      <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground flex items-center gap-1">
         {label}
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-neon cursor-help transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-[11px] leading-relaxed font-mono-tac normal-case tracking-normal bg-card border-border text-foreground">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <div className="mt-1 flex items-baseline gap-1">
         <span
