@@ -77,7 +77,7 @@ function Index() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_active, expiry_date, hiring_date")
+        .select("is_active, expiry_date, hiring_date, nome_de_guerra")
         .eq("id", session.user.id)
         .maybeSingle();
       if (profile && profile.is_active === false) {
