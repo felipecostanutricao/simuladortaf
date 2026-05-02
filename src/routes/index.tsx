@@ -12,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   METAS_PADRAO,
   indiceProntidao,
   rowToMetas,
@@ -20,7 +26,7 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon } from "lucide-react";
+import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon, HelpCircle, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -54,6 +60,8 @@ function Index() {
   const [hiringDate, setHiringDate] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+  const [nomeDeGuerra, setNomeDeGuerra] = useState("");
+  const [nomeLoading, setNomeLoading] = useState(false);
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
@@ -69,7 +77,7 @@ function Index() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_active, expiry_date, hiring_date")
+        .select("is_active, expiry_date, hiring_date, nome_de_guerra")
         .eq("id", session.user.id)
         .maybeSingle();
       if (profile && profile.is_active === false) {
@@ -90,6 +98,7 @@ function Index() {
       }
       setExpiryDate(profile?.expiry_date ?? null);
       setHiringDate(profile?.hiring_date ?? null);
+      setNomeDeGuerra((profile as any)?.nome_de_guerra ?? "");
       setUserId(session.user.id);
     };
 
@@ -221,6 +230,22 @@ function Index() {
     setNewPassword("");
   };
 
+  const handleSaveNomeDeGuerra = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId) return;
+    setNomeLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ nome_de_guerra: nomeDeGuerra.trim() } as any)
+      .eq("id", userId);
+    setNomeLoading(false);
+    if (error) {
+      toast.error("Falha ao salvar", { description: error.message });
+      return;
+    }
+    toast.success("Nome de Guerra salvo", { description: "Identificador atualizado com sucesso." });
+  };
+
   const expiryInfo = useMemo(() => {
     if (!expiryDate) return null;
     const exp = new Date(expiryDate);
@@ -256,7 +281,13 @@ function Index() {
         <CountdownTatico targetDate={tafDateIso} />
 
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Índice Geral" value={`${indiceAtual}`} suffix="pts" highlight />
+          <StatCard
+            label="Índice Geral"
+            value={`${indiceAtual}`}
+            suffix="pts"
+            highlight
+            tooltip="O Índice Geral avalia o cumprimento da missão. Cada modalidade atingida equivale a 100% de aproveitamento. O índice final é a média das provas. Exceder a meta cria reserva tática (física), mas não eleva o índice acima de 100 pts, focando na aprovação segura e prevenção de lesões."
+          />
           <StatCard label="Barra Fixa" value={`${simulado.barra}`} suffix={`/${metas.barra}`} />
           <StatCard label="Flexão" value={`${simulado.flexao}`} suffix={`/${metas.flexao}`} />
           <StatCard
@@ -384,10 +415,52 @@ function Index() {
               </Button>
             </form>
           </div>
+          {/* === NOME DE GUERRA === */}
+          <div className="panel p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <UserCog className="h-4 w-4 text-neon" />
+              <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
+                Nome de Guerra
+              </h3>
+            </div>
+            <p className="text-[10px] font-mono-tac text-muted-foreground mb-3 uppercase tracking-wider">
+              Este será o seu único identificador público nos futuros painéis de ranking tático.
+            </p>
+            <form onSubmit={handleSaveNomeDeGuerra} className="space-y-3">
+              <div>
+                <Label className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+                  Nome de Guerra
+                </Label>
+                <Input
+                  type="text"
+                  value={nomeDeGuerra}
+                  onChange={(e) => setNomeDeGuerra(e.target.value)}
+                  placeholder="Ex: BRAVO-7"
+                  className="mt-1 h-10 bg-background/50 focus-visible:ring-neon focus-visible:border-neon"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={nomeLoading}
+                className="w-full h-10 font-mono-tac uppercase tracking-widest text-xs bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon"
+              >
+                <UserCog className="h-4 w-4" />
+                {nomeLoading ? "Salvando..." : "Salvar Nome de Guerra"}
+              </Button>
+            </form>
+          </div>
         </section>
 
-        <footer className="pt-6 pb-4 text-center text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
-          // Central T.A.F — Sistema de Comando Operacional //
+        <footer className="pt-6 pb-4 text-center space-y-1">
+          <div className="text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
+            // Central T.A.F — Sistema de Comando Operacional //
+          </div>
+          <a
+            href="/termos"
+            className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground hover:text-neon transition-colors"
+          >
+            Termos e Condições de Uso
+          </a>
         </footer>
       </main>
 
@@ -406,16 +479,30 @@ function StatCard({
   value,
   suffix,
   highlight,
+  tooltip,
 }: {
   label: string;
   value: string;
   suffix?: string;
   highlight?: boolean;
+  tooltip?: string;
 }) {
   return (
     <div className={`panel p-3 ${highlight ? "panel-neon shadow-neon" : ""}`}>
-      <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
+      <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground flex items-center gap-1">
         {label}
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-neon cursor-help transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-[11px] leading-relaxed font-mono-tac normal-case tracking-normal bg-card border-border text-foreground">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <div className="mt-1 flex items-baseline gap-1">
         <span
