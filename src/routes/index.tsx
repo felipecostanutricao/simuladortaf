@@ -455,12 +455,12 @@ function Index() {
           <div className="text-[10px] font-mono-tac uppercase tracking-[0.3em] text-muted-foreground">
             // Central T.A.F — Sistema de Comando Operacional //
           </div>
-          <Link
-            to="/termos"
+          <a
+            href="/termos"
             className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground hover:text-neon transition-colors"
           >
             Termos e Condições de Uso
-          </Link>
+          </a>
         </footer>
       </main>
 
