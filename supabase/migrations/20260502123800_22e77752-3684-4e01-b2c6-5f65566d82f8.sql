@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN nome_de_guerra text;
