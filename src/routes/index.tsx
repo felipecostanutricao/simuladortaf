@@ -230,6 +230,22 @@ function Index() {
     setNewPassword("");
   };
 
+  const handleSaveNomeDeGuerra = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId) return;
+    setNomeLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ nome_de_guerra: nomeDeGuerra.trim() } as any)
+      .eq("id", userId);
+    setNomeLoading(false);
+    if (error) {
+      toast.error("Falha ao salvar", { description: error.message });
+      return;
+    }
+    toast.success("Nome de Guerra salvo", { description: "Identificador atualizado com sucesso." });
+  };
+
   const expiryInfo = useMemo(() => {
     if (!expiryDate) return null;
     const exp = new Date(expiryDate);
