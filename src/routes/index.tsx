@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/taf/Header";
@@ -12,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   METAS_PADRAO,
   indiceProntidao,
   rowToMetas,
@@ -20,7 +26,7 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon } from "lucide-react";
+import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon, HelpCircle, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
