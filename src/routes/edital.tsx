@@ -18,6 +18,35 @@ export const Route = createFileRoute("/edital")({
   }),
 });
 
+function formatDateForPostgres(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const year = Number(iso[1]);
+    const month = Number(iso[2]);
+    const day = Number(iso[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+      return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    }
+  }
+
+  const br = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2}|\d{4})$/);
+  if (br) {
+    const day = Number(br[1]);
+    const month = Number(br[2]);
+    const year = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+
+  throw new Error("Data do TAF inválida. Use o formato YYYY-MM-DD.");
+}
+
 function EditalPage() {
   const navigate = useNavigate();
   const { welcome } = Route.useSearch();
@@ -61,20 +90,39 @@ function EditalPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Sessão expirada");
+      const userId = session.user.id;
+      const formattedDataTaf = formatDateForPostgres(dataTaf);
 
       const payload = {
-        user_id: session.user.id,
         barra_meta: metas.barra,
         flexao_meta: metas.flexao,
         corrida_meta: metas.corrida,
         natacao_meta: metas.natacao,
-        data_taf: dataTaf || null,
+        data_taf: formattedDataTaf,
       };
 
-      const { error } = await supabase
+      const { data: existingGoal, error: selectError } = await supabase
         .from("taf_goals")
-        .upsert(payload, { onConflict: "user_id" });
-      if (error) throw error;
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (selectError) throw selectError;
+
+      if (existingGoal) {
+        const { error: updateError } = await supabase
+          .from("taf_goals")
+          .update(payload)
+          .eq("user_id", userId);
+
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from("taf_goals")
+          .insert({ ...payload, user_id: userId });
+
+        if (insertError) throw insertError;
+      }
 
       toast.success("Edital registrado", { description: "Metas e data do TAF aplicadas." });
       navigate({ to: "/" });
