@@ -11,12 +11,7 @@ import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   METAS_PADRAO,
   indiceProntidao,
@@ -26,7 +21,17 @@ import {
   type Simulado,
   type EvolucaoPoint,
 } from "@/lib/taf-data";
-import { Crosshair, Radar as RadarIcon, LineChart as LineIcon, CalendarClock, KeyRound, ShieldAlert, Scale as ScaleIcon, HelpCircle, UserCog } from "lucide-react";
+import {
+  Crosshair,
+  Radar as RadarIcon,
+  LineChart as LineIcon,
+  CalendarClock,
+  KeyRound,
+  ShieldAlert,
+  Scale as ScaleIcon,
+  HelpCircle,
+  UserCog,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -59,7 +64,11 @@ function formatDateForPostgres(value: string | null): string | null {
     const month = Number(br[2]);
     const year = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
     const date = new Date(Date.UTC(year, month - 1, day));
-    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+    if (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    ) {
       return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     }
   }
@@ -74,7 +83,12 @@ function Index() {
 
   const [metas, setMetas] = useState<Metas>(METAS_PADRAO);
   const [dataTaf, setDataTaf] = useState<string | null>(null);
-  const [simulado, setSimulado] = useState<Simulado>({ barra: 0, flexao: 0, corrida: 0, natacao: 0 });
+  const [simulado, setSimulado] = useState<Simulado>({
+    barra: 0,
+    flexao: 0,
+    corrida: 0,
+    natacao: 0,
+  });
   const [evolucao, setEvolucao] = useState<EvolucaoPoint[]>([]);
   const [configOpen, setConfigOpen] = useState(false);
   const [expiryDate, setExpiryDate] = useState<string | null>(null);
@@ -166,7 +180,7 @@ function Index() {
             month: "2-digit",
           }),
           indice: indiceProntidao(rowToSimulado(r), loadedMetas),
-        }))
+        })),
       );
     })();
   }, [userId]);
@@ -284,7 +298,11 @@ function Index() {
     const exp = new Date(expiryDate);
     const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
     return {
-      formatted: exp.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      formatted: exp.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
       days,
       critical: days <= 5,
     };
@@ -292,7 +310,11 @@ function Index() {
 
   const hiringFormatted = useMemo(() => {
     if (!hiringDate) return null;
-    return new Date(hiringDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return new Date(hiringDate).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   }, [hiringDate]);
 
   if (!authChecked || !userId) {
@@ -383,7 +405,9 @@ function Index() {
         <section className="grid md:grid-cols-2 gap-4">
           <div className={`panel p-5 ${expiryInfo?.critical ? "panel-neon shadow-neon" : ""}`}>
             <div className="flex items-center gap-2 mb-3">
-              <CalendarClock className={`h-4 w-4 ${expiryInfo?.critical ? "text-destructive" : "text-neon"}`} />
+              <CalendarClock
+                className={`h-4 w-4 ${expiryInfo?.critical ? "text-destructive" : "text-neon"}`}
+              />
               <h3 className="font-mono-tac uppercase text-xs tracking-widest text-foreground font-bold">
                 Status da Missão
               </h3>
@@ -393,11 +417,15 @@ function Index() {
                 <div className="text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
                   Vencimento da Vigência
                 </div>
-                <div className={`mt-1 text-2xl font-mono-tac font-bold tabular-nums ${expiryInfo.critical ? "text-destructive" : "text-neon text-glow"}`}>
+                <div
+                  className={`mt-1 text-2xl font-mono-tac font-bold tabular-nums ${expiryInfo.critical ? "text-destructive" : "text-neon text-glow"}`}
+                >
                   {expiryInfo.formatted}
                 </div>
                 <p className="mt-2 text-[11px] font-mono-tac uppercase tracking-wider text-muted-foreground">
-                  {expiryInfo.days > 0 ? `${expiryInfo.days} dia(s) restantes` : "Vigência expirada — contate o Comando"}
+                  {expiryInfo.days > 0
+                    ? `${expiryInfo.days} dia(s) restantes`
+                    : "Vigência expirada — contate o Comando"}
                 </p>
                 {hiringFormatted && (
                   <p className="mt-3 text-[10px] font-mono-tac uppercase tracking-widest text-muted-foreground">
@@ -530,7 +558,10 @@ function StatCard({
               <TooltipTrigger asChild>
                 <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-neon cursor-help transition-colors" />
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs text-[11px] leading-relaxed font-mono-tac normal-case tracking-normal bg-card border-border text-foreground">
+              <TooltipContent
+                side="bottom"
+                className="max-w-xs text-[11px] leading-relaxed font-mono-tac normal-case tracking-normal bg-card border-border text-foreground"
+              >
                 {tooltip}
               </TooltipContent>
             </Tooltip>
