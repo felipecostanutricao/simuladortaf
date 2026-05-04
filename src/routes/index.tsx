@@ -133,7 +133,7 @@ function Index() {
       }
       setExpiryDate(profile?.expiry_date ?? null);
       setHiringDate(profile?.hiring_date ?? null);
-      setNomeDeGuerra((profile as any)?.nome_de_guerra ?? "");
+      setNomeDeGuerra(profile?.nome_de_guerra ?? "");
       setUserId(session.user.id);
     };
 
@@ -283,7 +283,7 @@ function Index() {
     setNomeLoading(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ nome_de_guerra: nomeDeGuerra.trim() } as any)
+      .update({ nome_de_guerra: nomeDeGuerra.trim() })
       .eq("id", userId);
     setNomeLoading(false);
     if (error) {
