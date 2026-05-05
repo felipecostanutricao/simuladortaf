@@ -63,6 +63,61 @@ export type GoalsRow = {
   data_taf: string | null;
 };
 
+export type TafGoalsPayload = {
+  user_id: string;
+  barra_meta: number;
+  flexao_meta: number;
+  corrida_meta: number;
+  natacao_meta: number;
+  data_taf: string | null;
+};
+
+export function toRequiredInteger(value: number | string, field: string): number {
+  const parsed = parseInt(String(value), 10);
+  if (!Number.isFinite(parsed)) throw new Error(`${field} inválido.`);
+  return parsed;
+}
+
+export function formatTafDateForPostgres(value: string | null): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+
+  const br = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
+  if (br) {
+    const day = parseInt(br[1], 10);
+    const month = parseInt(br[2], 10);
+    const year = parseInt(br[3].length === 2 ? `20${br[3]}` : br[3], 10);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const year = parseInt(iso[1], 10);
+    const month = parseInt(iso[2], 10);
+    const day = parseInt(iso[3], 10);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+      return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    }
+  }
+
+  throw new Error("Data do TAF inválida. Use DD/MM/YYYY ou YYYY-MM-DD.");
+}
+
+export function buildTafGoalsPayload(userId: string, metas: Metas, dataTaf: string | null): TafGoalsPayload {
+  return {
+    user_id: userId,
+    barra_meta: toRequiredInteger(metas.barra, "Barra"),
+    flexao_meta: toRequiredInteger(metas.flexao, "Flexão"),
+    corrida_meta: toRequiredInteger(metas.corrida, "Corrida"),
+    natacao_meta: toRequiredInteger(metas.natacao, "Natação"),
+    data_taf: formatTafDateForPostgres(dataTaf),
+  };
+}
+
 export type RecordRow = {
   id?: string;
   barra_result: number;
