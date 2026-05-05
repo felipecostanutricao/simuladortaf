@@ -6,7 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollText, Target } from "lucide-react";
 import { toast } from "sonner";
-import { LABELS, UNIDADES, METAS_PADRAO, type Metas, type Modalidade } from "@/lib/taf-data";
+import {
+  LABELS,
+  UNIDADES,
+  METAS_PADRAO,
+  buildTafGoalsPayload,
+  type Metas,
+  type Modalidade,
+} from "@/lib/taf-data";
 
 export const Route = createFileRoute("/edital")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -17,35 +24,6 @@ export const Route = createFileRoute("/edital")({
     meta: [{ title: "Configurar Edital — Central T.A.F" }],
   }),
 });
-
-function formatDateForPostgres(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (iso) {
-    const year = Number(iso[1]);
-    const month = Number(iso[2]);
-    const day = Number(iso[3]);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
-      return `${iso[1]}-${iso[2]}-${iso[3]}`;
-    }
-  }
-
-  const br = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2}|\d{4})$/);
-  if (br) {
-    const day = Number(br[1]);
-    const month = Number(br[2]);
-    const year = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
-      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    }
-  }
-
-  throw new Error("Data do TAF inválida. Use o formato YYYY-MM-DD.");
-}
 
 function EditalPage() {
   const navigate = useNavigate();
@@ -91,15 +69,7 @@ function EditalPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Sessão expirada");
       const userId = session.user.id;
-      const formattedDataTaf = formatDateForPostgres(dataTaf);
-
-      const payload = {
-        barra_meta: metas.barra,
-        flexao_meta: metas.flexao,
-        corrida_meta: metas.corrida,
-        natacao_meta: metas.natacao,
-        data_taf: formattedDataTaf,
-      };
+      const payload = buildTafGoalsPayload(userId, metas, dataTaf);
 
       const { data: existingGoal, error: selectError } = await supabase
         .from("taf_goals")
@@ -112,14 +82,21 @@ function EditalPage() {
       if (existingGoal) {
         const { error: updateError } = await supabase
           .from("taf_goals")
-          .update(payload)
+          .update({
+            barra_meta: payload.barra_meta,
+            flexao_meta: payload.flexao_meta,
+            corrida_meta: payload.corrida_meta,
+            natacao_meta: payload.natacao_meta,
+            data_taf: payload.data_taf,
+            user_id: payload.user_id,
+          })
           .eq("user_id", userId);
 
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase
           .from("taf_goals")
-          .insert({ ...payload, user_id: userId });
+          .insert(payload);
 
         if (insertError) throw insertError;
       }

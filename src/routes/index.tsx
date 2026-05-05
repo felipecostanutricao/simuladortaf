@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   METAS_PADRAO,
+  buildTafGoalsPayload,
   indiceProntidao,
   rowToMetas,
   rowToSimulado,
@@ -50,31 +51,6 @@ export const Route = createFileRoute("/")({
 });
 
 const FALLBACK_TAF_DATE = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString();
-
-function formatDateForPostgres(value: string | null): string | null {
-  const trimmed = value?.trim();
-  if (!trimmed) return null;
-
-  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
-
-  const br = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
-  if (br) {
-    const day = Number(br[1]);
-    const month = Number(br[2]);
-    const year = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    if (
-      date.getUTCFullYear() === year &&
-      date.getUTCMonth() === month - 1 &&
-      date.getUTCDate() === day
-    ) {
-      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    }
-  }
-
-  throw new Error("Data do TAF inválida. Use YYYY-MM-DD.");
-}
 
 function Index() {
   const navigate = useNavigate();
@@ -224,13 +200,7 @@ function Index() {
   const handleSalvarMetas = async (m: Metas) => {
     if (!userId) return;
     try {
-      const payload = {
-        barra_meta: m.barra,
-        flexao_meta: m.flexao,
-        corrida_meta: m.corrida,
-        natacao_meta: m.natacao,
-        data_taf: formatDateForPostgres(dataTaf),
-      };
+      const payload = buildTafGoalsPayload(userId, m, dataTaf);
 
       const { data: existingGoal, error: selectError } = await supabase
         .from("taf_goals")
@@ -241,8 +211,18 @@ function Index() {
       if (selectError) throw selectError;
 
       const { error } = existingGoal
-        ? await supabase.from("taf_goals").update(payload).eq("user_id", userId)
-        : await supabase.from("taf_goals").insert({ ...payload, user_id: userId });
+        ? await supabase
+            .from("taf_goals")
+            .update({
+              barra_meta: payload.barra_meta,
+              flexao_meta: payload.flexao_meta,
+              corrida_meta: payload.corrida_meta,
+              natacao_meta: payload.natacao_meta,
+              data_taf: payload.data_taf,
+              user_id: payload.user_id,
+            })
+            .eq("user_id", userId)
+        : await supabase.from("taf_goals").insert(payload);
 
       if (error) throw error;
     } catch (err) {
