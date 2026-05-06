@@ -216,7 +216,28 @@ function Index() {
       day: "2-digit",
       month: "2-digit",
     });
-    setEvolucao((prev) => [...prev, { data: label, indice: indiceProntidao(s, metas) }]);
+    const newIndice = indiceProntidao(s, metas);
+    setEvolucao((prev) => [...prev, { data: label, indice: newIndice }]);
+
+    // Grant XP based on simulation result
+    const { data: settings } = await supabase
+      .from("system_settings")
+      .select("xp_simulado, xp_simulado_perfect")
+      .eq("id", 1)
+      .single();
+
+    const xpValue = newIndice >= 100
+      ? (settings?.xp_simulado_perfect ?? 25)
+      : (settings?.xp_simulado ?? 10);
+
+    await supabase.from("tactical_xp").insert({
+      user_id: userId,
+      xp_amount: xpValue,
+      reason: newIndice >= 100 ? "simulado_perfect" : "simulado",
+    } as any);
+
+    setTotalXp((prev) => prev + xpValue);
+    toast.success(`Simulado salvo! +${xpValue} XP`);
   };
 
   const handleSalvarMetas = async (m: Metas) => {
