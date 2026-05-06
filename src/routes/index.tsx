@@ -184,6 +184,7 @@ function Index() {
   }, [userId]);
 
   const indiceAtual = useMemo(() => indiceProntidao(simulado, metas), [simulado, metas]);
+  const rankInfo = useMemo(() => getRankInfo(totalXp, systemRanks), [totalXp, systemRanks]);
 
   const tafDateIso = useMemo(() => {
     if (!dataTaf) return FALLBACK_TAF_DATE;
