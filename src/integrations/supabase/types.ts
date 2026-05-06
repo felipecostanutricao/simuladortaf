@@ -83,6 +83,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          id: number
+          rank_elite_min: number
+          rank_fe_min: number
+          rank_operador_min: number
+          updated_at: string
+          weight_cooldown_days: number
+          xp_bio_update: number
+          xp_daily_report: number
+          xp_simulado: number
+          xp_simulado_perfect: number
+        }
+        Insert: {
+          id?: number
+          rank_elite_min?: number
+          rank_fe_min?: number
+          rank_operador_min?: number
+          updated_at?: string
+          weight_cooldown_days?: number
+          xp_bio_update?: number
+          xp_daily_report?: number
+          xp_simulado?: number
+          xp_simulado_perfect?: number
+        }
+        Update: {
+          id?: number
+          rank_elite_min?: number
+          rank_fe_min?: number
+          rank_operador_min?: number
+          updated_at?: string
+          weight_cooldown_days?: number
+          xp_bio_update?: number
+          xp_daily_report?: number
+          xp_simulado?: number
+          xp_simulado_perfect?: number
+        }
+        Relationships: []
+      }
       taf_goals: {
         Row: {
           barra_meta: number
