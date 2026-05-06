@@ -181,7 +181,6 @@ function Index() {
         setSystemRanks(settingsRes.data);
       }
     })();
-    })();
   }, [userId]);
 
   const indiceAtual = useMemo(() => indiceProntidao(simulado, metas), [simulado, metas]);
