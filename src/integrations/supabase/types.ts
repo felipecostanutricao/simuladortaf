@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_readiness: {
+        Row: {
+          borg_level: number
+          created_at: string
+          fatigue_level: number
+          hydration_level: number
+          id: string
+          report_date: string
+          sleep_hours: number
+          user_id: string
+        }
+        Insert: {
+          borg_level?: number
+          created_at?: string
+          fatigue_level?: number
+          hydration_level?: number
+          id?: string
+          report_date?: string
+          sleep_hours?: number
+          user_id: string
+        }
+        Update: {
+          borg_level?: number
+          created_at?: string
+          fatigue_level?: number
+          hydration_level?: number
+          id?: string
+          report_date?: string
+          sleep_hours?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       physical_evolution: {
         Row: {
           bmi: number
@@ -119,6 +152,30 @@ export type Database = {
           xp_daily_report?: number
           xp_simulado?: number
           xp_simulado_perfect?: number
+        }
+        Relationships: []
+      }
+      tactical_xp: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          user_id: string
+          xp_amount: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          user_id: string
+          xp_amount: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id?: string
+          xp_amount?: number
         }
         Relationships: []
       }
