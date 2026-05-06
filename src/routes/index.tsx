@@ -133,7 +133,7 @@ function Index() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const [goalsRes, recordsRes] = await Promise.all([
+      const [goalsRes, recordsRes, xpRes, settingsRes] = await Promise.all([
         supabase
           .from("taf_goals")
           .select("barra_meta, flexao_meta, corrida_meta, natacao_meta, data_taf")
@@ -144,6 +144,15 @@ function Index() {
           .select("id, barra_result, flexao_result, corrida_result, natacao_result, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: true }),
+        supabase
+          .from("tactical_xp")
+          .select("xp_amount")
+          .eq("user_id", userId),
+        supabase
+          .from("system_settings")
+          .select("rank_operador_min, rank_elite_min, rank_fe_min")
+          .eq("id", 1)
+          .single(),
       ]);
 
       const loadedMetas = rowToMetas(goalsRes.data);
@@ -152,7 +161,6 @@ function Index() {
 
       const records = recordsRes.data ?? [];
       if (records.length > 0) {
-        // Radar usa sempre o último registro
         setSimulado(rowToSimulado(records[records.length - 1]));
       }
       setEvolucao(
@@ -164,6 +172,15 @@ function Index() {
           indice: indiceProntidao(rowToSimulado(r), loadedMetas),
         })),
       );
+
+      // XP total
+      const xpTotal = (xpRes.data ?? []).reduce((sum, r) => sum + r.xp_amount, 0);
+      setTotalXp(xpTotal);
+
+      if (settingsRes.data) {
+        setSystemRanks(settingsRes.data);
+      }
+    })();
     })();
   }, [userId]);
 
