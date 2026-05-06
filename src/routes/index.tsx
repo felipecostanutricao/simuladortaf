@@ -8,6 +8,8 @@ import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
 import { BioestatisticaSection } from "@/components/taf/BioestatisticaSection";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
+import { DailyReadinessForm } from "@/components/taf/DailyReadinessForm";
+import { RankingTab, getRankInfo } from "@/components/taf/RankingTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
