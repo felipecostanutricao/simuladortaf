@@ -8,6 +8,8 @@ import { RadarChartTaf } from "@/components/taf/RadarChartTaf";
 import { EvolucaoChart } from "@/components/taf/EvolucaoChart";
 import { BioestatisticaSection } from "@/components/taf/BioestatisticaSection";
 import { ConfigEditalModal } from "@/components/taf/ConfigEditalModal";
+import { DailyReadinessForm } from "@/components/taf/DailyReadinessForm";
+import { RankingTab, getRankInfo } from "@/components/taf/RankingTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +34,8 @@ import {
   Scale as ScaleIcon,
   HelpCircle,
   UserCog,
+  HeartPulse,
+  Trophy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -73,6 +77,8 @@ function Index() {
   const [pwLoading, setPwLoading] = useState(false);
   const [nomeDeGuerra, setNomeDeGuerra] = useState("");
   const [nomeLoading, setNomeLoading] = useState(false);
+  const [totalXp, setTotalXp] = useState(0);
+  const [systemRanks, setSystemRanks] = useState({ rank_operador_min: 100, rank_elite_min: 500, rank_fe_min: 1000 });
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
@@ -127,7 +133,7 @@ function Index() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const [goalsRes, recordsRes] = await Promise.all([
+      const [goalsRes, recordsRes, xpRes, settingsRes] = await Promise.all([
         supabase
           .from("taf_goals")
           .select("barra_meta, flexao_meta, corrida_meta, natacao_meta, data_taf")
@@ -138,6 +144,15 @@ function Index() {
           .select("id, barra_result, flexao_result, corrida_result, natacao_result, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: true }),
+        supabase
+          .from("tactical_xp")
+          .select("xp_amount")
+          .eq("user_id", userId),
+        supabase
+          .from("system_settings")
+          .select("rank_operador_min, rank_elite_min, rank_fe_min")
+          .eq("id", 1)
+          .single(),
       ]);
 
       const loadedMetas = rowToMetas(goalsRes.data);
@@ -146,7 +161,6 @@ function Index() {
 
       const records = recordsRes.data ?? [];
       if (records.length > 0) {
-        // Radar usa sempre o último registro
         setSimulado(rowToSimulado(records[records.length - 1]));
       }
       setEvolucao(
@@ -158,10 +172,19 @@ function Index() {
           indice: indiceProntidao(rowToSimulado(r), loadedMetas),
         })),
       );
+
+      // XP total
+      const xpTotal = (xpRes.data ?? []).reduce((sum, r) => sum + r.xp_amount, 0);
+      setTotalXp(xpTotal);
+
+      if (settingsRes.data) {
+        setSystemRanks(settingsRes.data);
+      }
     })();
   }, [userId]);
 
   const indiceAtual = useMemo(() => indiceProntidao(simulado, metas), [simulado, metas]);
+  const rankInfo = useMemo(() => getRankInfo(totalXp, systemRanks), [totalXp, systemRanks]);
 
   const tafDateIso = useMemo(() => {
     if (!dataTaf) return FALLBACK_TAF_DATE;
@@ -194,7 +217,28 @@ function Index() {
       day: "2-digit",
       month: "2-digit",
     });
-    setEvolucao((prev) => [...prev, { data: label, indice: indiceProntidao(s, metas) }]);
+    const newIndice = indiceProntidao(s, metas);
+    setEvolucao((prev) => [...prev, { data: label, indice: newIndice }]);
+
+    // Grant XP based on simulation result
+    const { data: settings } = await supabase
+      .from("system_settings")
+      .select("xp_simulado, xp_simulado_perfect")
+      .eq("id", 1)
+      .single();
+
+    const xpValue = newIndice >= 100
+      ? (settings?.xp_simulado_perfect ?? 25)
+      : (settings?.xp_simulado ?? 10);
+
+    await supabase.from("tactical_xp").insert({
+      user_id: userId,
+      xp_amount: xpValue,
+      reason: newIndice >= 100 ? "simulado_perfect" : "simulado",
+    } as any);
+
+    setTotalXp((prev) => prev + xpValue);
+    toast.success(`Simulado salvo! +${xpValue} XP`);
   };
 
   const handleSalvarMetas = async (m: Metas) => {
@@ -315,7 +359,7 @@ function Index() {
       <main className="container mx-auto px-4 py-6 space-y-6 max-w-6xl">
         <CountdownTatico targetDate={tafDateIso} />
 
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <StatCard
             label="Índice Geral"
             value={`${indiceAtual}`}
@@ -330,37 +374,57 @@ function Index() {
             value={`${simulado.corrida}`}
             suffix={`/${metas.corrida}m`}
           />
+          <StatCard
+            label="Patente"
+            value={rankInfo.label}
+            suffix={`${totalXp} XP`}
+            tooltip={`Recruta → Operador (${systemRanks.rank_operador_min} XP) → Elite (${systemRanks.rank_elite_min} XP) → F.E. (${systemRanks.rank_fe_min} XP)`}
+          />
         </section>
 
         <Tabs defaultValue="simular" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card border border-border h-12 p-1">
+          <TabsList className="grid w-full grid-cols-6 bg-card border border-border h-12 p-1">
             <TabsTrigger
               value="simular"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <Crosshair className="h-4 w-4 mr-1.5" />
+              <Crosshair className="h-4 w-4 mr-1" />
               Simular
             </TabsTrigger>
             <TabsTrigger
               value="radar"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <RadarIcon className="h-4 w-4 mr-1.5" />
+              <RadarIcon className="h-4 w-4 mr-1" />
               Radar
             </TabsTrigger>
             <TabsTrigger
               value="evolucao"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <LineIcon className="h-4 w-4 mr-1.5" />
+              <LineIcon className="h-4 w-4 mr-1" />
               Evolução
             </TabsTrigger>
             <TabsTrigger
               value="bio"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <ScaleIcon className="h-4 w-4 mr-1.5" />
+              <ScaleIcon className="h-4 w-4 mr-1" />
               Bio
+            </TabsTrigger>
+            <TabsTrigger
+              value="prontidao"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+            >
+              <HeartPulse className="h-4 w-4 mr-1" />
+              Prontidão
+            </TabsTrigger>
+            <TabsTrigger
+              value="ranking"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+            >
+              <Trophy className="h-4 w-4 mr-1" />
+              Ranking
             </TabsTrigger>
           </TabsList>
 
@@ -378,6 +442,14 @@ function Index() {
 
           <TabsContent value="bio" className="mt-5">
             <BioestatisticaSection userId={userId} />
+          </TabsContent>
+
+          <TabsContent value="prontidao" className="mt-5">
+            <DailyReadinessForm userId={userId} />
+          </TabsContent>
+
+          <TabsContent value="ranking" className="mt-5">
+            <RankingTab />
           </TabsContent>
         </Tabs>
 
