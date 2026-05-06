@@ -154,6 +154,13 @@ export function BioestatisticaSection({ userId }: { userId: string }) {
             Registro Biométrico
           </h3>
         </div>
+        {cooldownBlocked && (
+          <div className="panel p-3 border border-yellow-500/30 bg-yellow-500/10 mb-4">
+            <p className="text-[11px] font-mono-tac uppercase tracking-wider text-yellow-400">
+              ⏳ Cooldown ativo — aguarde {cooldownRemaining} dia(s) para novo registro biométrico.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
