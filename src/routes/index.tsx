@@ -359,7 +359,7 @@ function Index() {
       <main className="container mx-auto px-4 py-6 space-y-6 max-w-6xl">
         <CountdownTatico targetDate={tafDateIso} />
 
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <StatCard
             label="Índice Geral"
             value={`${indiceAtual}`}
@@ -374,37 +374,57 @@ function Index() {
             value={`${simulado.corrida}`}
             suffix={`/${metas.corrida}m`}
           />
+          <StatCard
+            label="Patente"
+            value={rankInfo.label}
+            suffix={`${totalXp} XP`}
+            tooltip={`Recruta → Operador (${systemRanks.rank_operador_min} XP) → Elite (${systemRanks.rank_elite_min} XP) → F.E. (${systemRanks.rank_fe_min} XP)`}
+          />
         </section>
 
         <Tabs defaultValue="simular" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card border border-border h-12 p-1">
+          <TabsList className="grid w-full grid-cols-6 bg-card border border-border h-12 p-1">
             <TabsTrigger
               value="simular"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <Crosshair className="h-4 w-4 mr-1.5" />
+              <Crosshair className="h-4 w-4 mr-1" />
               Simular
             </TabsTrigger>
             <TabsTrigger
               value="radar"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <RadarIcon className="h-4 w-4 mr-1.5" />
+              <RadarIcon className="h-4 w-4 mr-1" />
               Radar
             </TabsTrigger>
             <TabsTrigger
               value="evolucao"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <LineIcon className="h-4 w-4 mr-1.5" />
+              <LineIcon className="h-4 w-4 mr-1" />
               Evolução
             </TabsTrigger>
             <TabsTrigger
               value="bio"
-              className="font-mono-tac uppercase text-xs tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
             >
-              <ScaleIcon className="h-4 w-4 mr-1.5" />
+              <ScaleIcon className="h-4 w-4 mr-1" />
               Bio
+            </TabsTrigger>
+            <TabsTrigger
+              value="prontidao"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+            >
+              <HeartPulse className="h-4 w-4 mr-1" />
+              Prontidão
+            </TabsTrigger>
+            <TabsTrigger
+              value="ranking"
+              className="font-mono-tac uppercase text-[10px] tracking-widest data-[state=active]:bg-neon data-[state=active]:text-primary-foreground data-[state=active]:shadow-neon"
+            >
+              <Trophy className="h-4 w-4 mr-1" />
+              Ranking
             </TabsTrigger>
           </TabsList>
 
@@ -422,6 +442,14 @@ function Index() {
 
           <TabsContent value="bio" className="mt-5">
             <BioestatisticaSection userId={userId} />
+          </TabsContent>
+
+          <TabsContent value="prontidao" className="mt-5">
+            <DailyReadinessForm userId={userId} />
+          </TabsContent>
+
+          <TabsContent value="ranking" className="mt-5">
+            <RankingTab />
           </TabsContent>
         </Tabs>
 
