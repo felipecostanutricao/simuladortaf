@@ -77,6 +77,8 @@ function Index() {
   const [pwLoading, setPwLoading] = useState(false);
   const [nomeDeGuerra, setNomeDeGuerra] = useState("");
   const [nomeLoading, setNomeLoading] = useState(false);
+  const [totalXp, setTotalXp] = useState(0);
+  const [systemRanks, setSystemRanks] = useState({ rank_operador_min: 100, rank_elite_min: 500, rank_fe_min: 1000 });
 
   // Auth guard + admin redirect + active check
   useEffect(() => {
