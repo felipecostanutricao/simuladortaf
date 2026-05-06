@@ -211,7 +211,7 @@ export function BioestatisticaSection({ userId }: { userId: string }) {
 
           <Button
             type="submit"
-            disabled={saving}
+            disabled={saving || cooldownBlocked}
             onMouseEnter={playHover}
             className="w-full h-10 font-mono-tac uppercase tracking-widest text-xs bg-neon text-primary-foreground hover:bg-neon/90 shadow-neon"
           >
