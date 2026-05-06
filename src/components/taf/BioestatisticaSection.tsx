@@ -40,17 +40,45 @@ export function BioestatisticaSection({ userId }: { userId: string }) {
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [saving, setSaving] = useState(false);
+  const [cooldownDays, setCooldownDays] = useState(7);
+  const [cooldownBlocked, setCooldownBlocked] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
-    supabase
-      .from("physical_evolution")
-      .select("id, weight, height, bmi, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        if (data) setRecords(data.map(r => ({ ...r, weight: Number(r.weight), height: Number(r.height), bmi: Number(r.bmi) })));
-      });
+    loadData();
   }, [userId]);
+
+  async function loadData() {
+    const [recordsRes, settingsRes] = await Promise.all([
+      supabase
+        .from("physical_evolution")
+        .select("id, weight, height, bmi, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("system_settings")
+        .select("weight_cooldown_days, xp_bio_update")
+        .eq("id", 1)
+        .single(),
+    ]);
+
+    const data = recordsRes.data ?? [];
+    const mapped = data.map(r => ({ ...r, weight: Number(r.weight), height: Number(r.height), bmi: Number(r.bmi) }));
+    setRecords(mapped);
+
+    const cd = settingsRes.data?.weight_cooldown_days ?? 7;
+    setCooldownDays(cd);
+
+    // Check cooldown
+    if (mapped.length > 0) {
+      const lastDate = new Date(mapped[mapped.length - 1].created_at);
+      const diffDays = Math.floor((Date.now() - lastDate.getTime()) / 86400000);
+      if (diffDays < cd) {
+        setCooldownBlocked(true);
+        setCooldownRemaining(cd - diffDays);
+      }
+    }
+  }
 
   const bmiCalc = useMemo(() => {
     const w = parseFloat(weight);
@@ -63,6 +91,11 @@ export function BioestatisticaSection({ userId }: { userId: string }) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldownBlocked) {
+      playError();
+      toast.error("Cooldown ativo", { description: `Aguarde ${cooldownRemaining} dia(s) para atualizar.` });
+      return;
+    }
     const w = parseFloat(weight);
     const h = parseFloat(height);
     if (!w || !h || h <= 0) {
@@ -83,11 +116,28 @@ export function BioestatisticaSection({ userId }: { userId: string }) {
       toast.error("Falha ao salvar", { description: error.message });
       return;
     }
+
+    // Grant XP for bio update
+    const { data: settings } = await supabase
+      .from("system_settings")
+      .select("xp_bio_update")
+      .eq("id", 1)
+      .single();
+    const xpValue = settings?.xp_bio_update ?? 5;
+
+    await supabase.from("tactical_xp").insert({
+      user_id: userId,
+      xp_amount: xpValue,
+      reason: "bio_update",
+    } as any);
+
     playSuccess();
-    toast.success("Bioestatística registrada");
+    toast.success(`Bioestatística registrada! +${xpValue} XP`);
     setRecords(prev => [...prev, { ...data, weight: Number(data.weight), height: Number(data.height), bmi: Number(data.bmi) }]);
     setWeight("");
     setHeight("");
+    setCooldownBlocked(true);
+    setCooldownRemaining(cooldownDays);
   };
 
   const weightData = records.map(r => ({ data: formatDate(r.created_at), peso: r.weight }));
