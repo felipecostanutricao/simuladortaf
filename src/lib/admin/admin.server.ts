@@ -37,12 +37,12 @@ export async function createUser(email: string, password: string, expiryDate: st
 
   // The handle_new_user trigger creates profile/roles automatically.
   // Now activate and set expiry if provided.
-  const updates: Record<string, unknown> = { is_active: true };
+  const profileUpdate: { is_active: boolean; hiring_date?: string; expiry_date?: string } = { is_active: true };
   if (expiryDate) {
-    updates.hiring_date = new Date().toISOString();
-    updates.expiry_date = new Date(expiryDate + "T23:59:59").toISOString();
+    profileUpdate.hiring_date = new Date().toISOString();
+    profileUpdate.expiry_date = new Date(expiryDate + "T23:59:59").toISOString();
   }
-  await supabaseAdmin.from("profiles").update(updates).eq("id", data.user.id);
+  await supabaseAdmin.from("profiles").update(profileUpdate).eq("id", data.user.id);
 
   return { userId: data.user.id };
 }
