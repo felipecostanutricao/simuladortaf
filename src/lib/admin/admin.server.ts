@@ -25,3 +25,24 @@ export async function setUserPassword(targetUserId: string, newPassword: string)
   if (error) throw new Error(error.message);
   return { ok: true };
 }
+
+export async function createUser(email: string, password: string, expiryDate: string | null) {
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (error) throw new Error(error.message);
+  if (!data.user) throw new Error("Falha ao criar usuário");
+
+  // The handle_new_user trigger creates profile/roles automatically.
+  // Now activate and set expiry if provided.
+  const profileUpdate: { is_active: boolean; hiring_date?: string; expiry_date?: string } = { is_active: true };
+  if (expiryDate) {
+    profileUpdate.hiring_date = new Date().toISOString();
+    profileUpdate.expiry_date = new Date(expiryDate + "T23:59:59").toISOString();
+  }
+  await supabaseAdmin.from("profiles").update(profileUpdate).eq("id", data.user.id);
+
+  return { userId: data.user.id };
+}
