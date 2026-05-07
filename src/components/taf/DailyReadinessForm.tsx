@@ -82,8 +82,8 @@ export function DailyReadinessForm({ userId }: Props) {
     const { error } = await supabase.from("daily_readiness").insert({
       user_id: userId,
       fatigue_level: fatigue,
-      borg_level: borg,
-      hydration_level: hydration,
+      borg_rpe: borg,
+      urine_color: hydration,
       sleep_hours: hours,
       report_date: today,
     } as any);
