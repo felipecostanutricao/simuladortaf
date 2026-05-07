@@ -16,33 +16,33 @@ export type Database = {
     Tables: {
       daily_readiness: {
         Row: {
-          borg_level: number
+          borg_rpe: number
           created_at: string
           fatigue_level: number
-          hydration_level: number
           id: string
           report_date: string
           sleep_hours: number
+          urine_color: number
           user_id: string
         }
         Insert: {
-          borg_level?: number
+          borg_rpe?: number
           created_at?: string
           fatigue_level?: number
-          hydration_level?: number
           id?: string
           report_date?: string
           sleep_hours?: number
+          urine_color?: number
           user_id: string
         }
         Update: {
-          borg_level?: number
+          borg_rpe?: number
           created_at?: string
           fatigue_level?: number
-          hydration_level?: number
           id?: string
           report_date?: string
           sleep_hours?: number
+          urine_color?: number
           user_id?: string
         }
         Relationships: []
